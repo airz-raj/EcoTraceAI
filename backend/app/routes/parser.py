@@ -5,10 +5,10 @@ POST /api/parse/electricity-bill — Parse uploaded electricity bills.
 POST /api/parse/receipt — Parse grocery receipts.
 
 SECURITY: Enforces 10MB limit and validates MIME types via magic bytes.
+Uses pure-Python header detection — no system dependencies required.
 """
 
 import uuid
-import magic
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 import aiosqlite
@@ -17,15 +17,37 @@ from app.db.database import get_db
 
 router = APIRouter()
 
-# Allowed MIME types (validated via magic bytes, not extensions)
-ALLOWED_MIME_TYPES = {
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "application/pdf",
+# Magic byte signatures for allowed file types
+MAGIC_SIGNATURES: dict[bytes, str] = {
+    b'\xff\xd8\xff': 'image/jpeg',
+    b'\x89PNG\r\n\x1a\n': 'image/png',
+    b'RIFF': 'image/webp',  # WebP starts with RIFF....WEBP
+    b'%PDF': 'application/pdf',
 }
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+
+
+def detect_mime_type(content: bytes) -> str | None:
+    """
+    Detect MIME type from file magic bytes (header signatures).
+
+    Pure-Python implementation — no libmagic dependency.
+    Checks the first 16 bytes against known signatures.
+    """
+    header = content[:16]
+
+    for sig, mime in MAGIC_SIGNATURES.items():
+        if header.startswith(sig):
+            # Extra check for WebP: must have WEBP at offset 8
+            if mime == 'image/webp' and content[8:12] != b'WEBP':
+                continue
+            return mime
+
+    return None
+
+
+ALLOWED_MIME_TYPES = set(MAGIC_SIGNATURES.values())
 
 
 async def validate_upload(file: UploadFile) -> bytes:
@@ -40,11 +62,11 @@ async def validate_upload(file: UploadFile) -> bytes:
         )
 
     # MIME type validation via magic bytes (not file extension)
-    detected_mime = magic.from_buffer(content, mime=True)
-    if detected_mime not in ALLOWED_MIME_TYPES:
+    detected_mime = detect_mime_type(content)
+    if detected_mime is None or detected_mime not in ALLOWED_MIME_TYPES:
         raise HTTPException(
             status_code=422,
-            detail=f"Invalid file type '{detected_mime}'. Allowed: {', '.join(ALLOWED_MIME_TYPES)}",
+            detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_MIME_TYPES)}",
         )
 
     return content
@@ -82,7 +104,7 @@ async def parse_electricity_bill(
         "status": "uploaded",
         "message": "File validated successfully. Use client-side OCR for immediate processing.",
         "file_size_bytes": len(content),
-        "detected_type": magic.from_buffer(content, mime=True),
+        "detected_type": detect_mime_type(content),
     }
 
 

@@ -1,11 +1,12 @@
 /**
  * EcoTrace AI — Main Application
  *
- * React Router v6 with 4 main pages:
- * - Dashboard (overview + charts + insights)
+ * React Router v6 with 5 main pages:
+ * - Dashboard (overview + charts + streak calendar + insights)
  * - Calculator (transport, food, energy, shopping forms)
- * - Bill Parser (OCR file upload)
- * - Digital Tracker (CLI agent integration)
+ * - Bill Parser (OCR → carbon footprint pipeline)
+ * - Digital Tracker (web simulator + CLI agent)
+ * - Impact Hub (carbon budget, what-if scenarios, climate action)
  */
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -17,6 +18,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { CalculatorPage } from './pages/CalculatorPage';
 import { ParserPage } from './pages/ParserPage';
 import { DigitalPage } from './pages/DigitalPage';
+import { ImpactHubPage } from './pages/ImpactHubPage';
 
 export default function App() {
   return (
@@ -32,6 +34,7 @@ export default function App() {
               <Route path="/calculator" element={<CalculatorPage />} />
               <Route path="/parser" element={<ParserPage />} />
               <Route path="/digital" element={<DigitalPage />} />
+              <Route path="/impact" element={<ImpactHubPage />} />
             </Routes>
           </main>
 

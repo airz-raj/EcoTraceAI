@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { path: '/calculator', label: 'Calculator', icon: '🧮' },
   { path: '/parser', label: 'Bill Parser', icon: '📄' },
   { path: '/digital', label: 'Digital Tracker', icon: '💻' },
+  { path: '/impact', label: 'Impact Hub', icon: '🌍' },
 ];
 
 export function Navbar() {

@@ -5,6 +5,7 @@
 import { CarbonSummaryCard } from '../components/dashboard/CarbonSummaryCard';
 import { TrendChart } from '../components/dashboard/TrendChart';
 import { CategoryBreakdown } from '../components/dashboard/CategoryBreakdown';
+import { EcoStreakCalendar } from '../components/dashboard/EcoStreakCalendar';
 import { InsightPanel } from '../components/insights/InsightPanel';
 
 export function DashboardPage() {
@@ -20,6 +21,8 @@ export function DashboardPage() {
       </header>
 
       <CarbonSummaryCard />
+
+      <EcoStreakCalendar />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TrendChart />

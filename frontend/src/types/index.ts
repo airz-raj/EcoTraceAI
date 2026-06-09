@@ -151,6 +151,8 @@ export interface ParsedReceiptData {
     name: string;
     category: FoodCategory;
     confidence: number;
+    /** Estimated weight in kg (parsed from receipt or default 0.5kg) */
+    estimatedWeightKg?: number;
   }>;
   /** Total amount detected */
   totalAmount?: number;

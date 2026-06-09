@@ -1,0 +1,3 @@
+# EcoTrace AI — CLI Agent Dependencies
+psutil>=5.9.0
+py-cpuinfo>=9.0.0

@@ -14,7 +14,6 @@ self.onmessage = async (e: MessageEvent) => {
 
   try {
     // Dynamically import transformers.js to avoid loading at startup
-    // @ts-expect-error — dynamic import of transformers.js WASM module
     const { pipeline } = await import('@xenova/transformers');
 
     const classifier = await pipeline(
@@ -32,7 +31,7 @@ self.onmessage = async (e: MessageEvent) => {
 
     for (const rec of recommendations) {
       try {
-        const result = await classifier(`${rec.title}. ${rec.description}`, labels);
+        const result = await classifier(`${rec.title}. ${rec.description}`, labels) as any;
         // Map classification to priority score
         const highScore = result.scores[result.labels.indexOf('high environmental impact')] ?? 0;
         scores.push(Math.round(50 + highScore * 50));

@@ -5,10 +5,12 @@ WORKDIR /app
 
 # Copy package files first (Docker layer caching)
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
+RUN npm ci
 
-# Copy source and build
+# Copy source and config
 COPY . .
+
+# Vite reads .env.production automatically during build
 RUN npm run build
 
 # ── Stage 2: Serve ──────────────────────────────────────

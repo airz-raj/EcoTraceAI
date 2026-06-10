@@ -103,4 +103,10 @@ export async function checkHealth(): Promise<boolean> {
   }
 }
 
+/** Send message to AI chatbot */
+export async function sendChatMessage(messages: {role: string, content: string}[], contextData?: any): Promise<{response: string, source: string}> {
+  const { data } = await apiClient.post('/chat', { messages, contextData });
+  return data;
+}
+
 export default apiClient;

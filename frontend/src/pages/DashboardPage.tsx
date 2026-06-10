@@ -7,6 +7,7 @@ import { TrendChart } from '../components/dashboard/TrendChart';
 import { CategoryBreakdown } from '../components/dashboard/CategoryBreakdown';
 import { EcoStreakCalendar } from '../components/dashboard/EcoStreakCalendar';
 import { InsightPanel } from '../components/insights/InsightPanel';
+import { EcoChatbot } from '../components/dashboard/EcoChatbot';
 
 export function DashboardPage() {
   return (
@@ -30,6 +31,8 @@ export function DashboardPage() {
       </div>
 
       <InsightPanel />
+
+      <EcoChatbot />
     </div>
   );
 }

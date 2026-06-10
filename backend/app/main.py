@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.routes import carbon, parser, digital
+from app.routes import carbon, parser, digital, chat
 from app.db.database import init_db
 
 
@@ -66,9 +66,10 @@ async def add_security_headers(request, call_next):
 
 # ─── Routes ────────────────────────────────────────────────
 
-app.include_router(carbon.router, prefix="/api", tags=["Carbon"])
+app.include_router(carbon.router, prefix="/api", tags=["Carbon Data"])
 app.include_router(parser.router, prefix="/api", tags=["Parser"])
-app.include_router(digital.router, prefix="/api", tags=["Digital"])
+app.include_router(digital.router, prefix="/api", tags=["Digital Footprint"])
+app.include_router(chat.router, prefix="/api", tags=["AI Chatbot"])
 
 
 # ─── Health Check ──────────────────────────────────────────

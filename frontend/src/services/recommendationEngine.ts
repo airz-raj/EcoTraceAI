@@ -172,7 +172,22 @@ export function generateRecommendations(entry: CarbonEntry): Recommendation[] {
   }
 
   // Sort by priority (highest first)
-  return recommendations.sort((a, b) => b.priority - a.priority);
+  const sorted = recommendations.sort((a, b) => b.priority - a.priority);
+
+  // Fallback if emissions are exceptionally low
+  if (sorted.length === 0) {
+    sorted.push({
+      id: nextId(),
+      category: 'transportKg', // using a valid category key
+      title: 'Maintain Your Low Footprint',
+      description: 'Your emissions are remarkably low! Keep practicing your current sustainable habits.',
+      potentialSavingKg: 0,
+      difficulty: 'easy',
+      priority: 100,
+    });
+  }
+
+  return sorted;
 }
 
 /**

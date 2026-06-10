@@ -7,8 +7,8 @@
 
 import axios, { type AxiosInstance, type AxiosError } from 'axios';
 
-/** API base URL — defaults to local development server */
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+/** API base URL — points to deployed Cloud Run backend if env var is missing */
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://ecotrace-api-mwzc2e6ffq-el.a.run.app/api';
 
 /** Request timeout in milliseconds */
 const TIMEOUT_MS = 15000;

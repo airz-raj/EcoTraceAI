@@ -21,7 +21,7 @@ export function Navbar() {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 glass-card-static"
+      className="fixed top-0 left-0 right-0 z-50 glass-card-static nav-unwrapper"
       style={{
         borderRadius: 0,
         borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -40,13 +40,13 @@ export function Navbar() {
             className="flex items-center gap-2 text-xl font-bold no-underline"
             aria-label="EcoTrace AI Home"
           >
-            <span className="text-2xl" role="img" aria-hidden="true">🌍</span>
-            <span className="gradient-text">EcoTrace AI</span>
+            <span className="text-2xl trace-icon" style={{ '--delay': '0.2s' } as React.CSSProperties} role="img" aria-hidden="true">🌍</span>
+            <span className="gradient-text trace-text" data-text="EcoTrace AI" style={{ '--delay': '0.4s' } as React.CSSProperties}>EcoTrace AI</span>
           </NavLink>
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-1" role="menubar">
-            {NAV_ITEMS.map((item) => (
+            {NAV_ITEMS.map((item, idx) => (
               <NavLink
                 key={item.path}
                 to={item.path}
@@ -56,8 +56,8 @@ export function Navbar() {
                 }
                 role="menuitem"
               >
-                <span role="img" aria-hidden="true">{item.icon}</span>
-                {item.label}
+                <span className="trace-icon" style={{ '--delay': `${0.6 + idx * 0.2}s` } as React.CSSProperties} role="img" aria-hidden="true">{item.icon}</span>
+                <span className="trace-text" data-text={item.label} style={{ '--delay': `${0.7 + idx * 0.2}s` } as React.CSSProperties}>{item.label}</span>
               </NavLink>
             ))}
           </div>
@@ -66,7 +66,8 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+              className="p-2 rounded-lg hover:bg-white/5 transition-colors trace-icon"
+              style={{ '--delay': '2s' } as React.CSSProperties}
               aria-label={state.darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               title={state.darkMode ? 'Light mode' : 'Dark mode'}
             >
@@ -77,7 +78,7 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         <div className="md:hidden flex overflow-x-auto gap-1 pb-2 -mx-1 px-1" role="menubar">
-          {NAV_ITEMS.map((item) => (
+          {NAV_ITEMS.map((item, idx) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -87,8 +88,8 @@ export function Navbar() {
               }
               role="menuitem"
             >
-              <span role="img" aria-hidden="true">{item.icon}</span>
-              {item.label}
+              <span className="trace-icon" style={{ '--delay': `${0.6 + idx * 0.2}s` } as React.CSSProperties} role="img" aria-hidden="true">{item.icon}</span>
+              <span className="trace-text" data-text={item.label} style={{ '--delay': `${0.7 + idx * 0.2}s` } as React.CSSProperties}>{item.label}</span>
             </NavLink>
           ))}
         </div>

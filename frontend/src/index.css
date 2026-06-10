@@ -328,6 +328,82 @@
   .stagger-2 { animation-delay: 0.2s; }
   .stagger-3 { animation-delay: 0.3s; }
   .stagger-4 { animation-delay: 0.4s; }
+
+  @keyframes traceLine {
+    0% { width: 0; left: 50%; opacity: 1; }
+    40% { width: 100%; left: 0%; opacity: 1; }
+    100% { width: 100%; left: 0%; opacity: 0; }
+  }
+
+  @keyframes unveilNav {
+    0% { opacity: 0; filter: blur(10px); transform: translateY(-5px); }
+    10% { opacity: 1; filter: blur(0); transform: translateY(0); } /* Unveil structural background fast */
+    100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+  }
+
+  /* Perfection Text Tracing Effect */
+  .trace-text {
+    position: relative;
+    display: inline-block;
+    /* Base text starts invisible (clipped out) */
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+    animation: sweepBaseText 0.5s calc(var(--delay) + 1.2s) cubic-bezier(0.8, 0, 0.2, 1) forwards;
+  }
+
+  /* The ::before is the hollow stroked version that traces */
+  .trace-text::before {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+    -webkit-text-stroke: 1px rgba(52, 211, 153, 0.9);
+    /* It sweeps in, giving the illusion of being drawn */
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+    animation: drawStroke 1.2s var(--delay) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes drawStroke {
+    0% { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); opacity: 1; }
+    50% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); opacity: 1; text-shadow: 0 0 10px rgba(52, 211, 153, 0.6); }
+    100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); opacity: 0; }
+  }
+
+  @keyframes sweepBaseText {
+    0% { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); opacity: 1; }
+    100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); opacity: 1; }
+  }
+
+  /* Emoji specific fade-in so they don't break stroke rendering */
+  .trace-icon {
+    opacity: 0;
+    transform: scale(0.5);
+    animation: popIcon 0.5s var(--delay) cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  @keyframes popIcon {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .nav-unwrapper {
+    position: relative;
+  }
+
+  .nav-unwrapper > div {
+    animation: unveilNav 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .nav-unwrapper::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    height: 1.5px;
+    background: linear-gradient(90deg, transparent, #34d399, #0ea5e9, #a855f7, transparent);
+    animation: traceLine 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    z-index: 100;
+  }
 }
 
 /* ─── Screen Reader Only ─────────────────────────────────── */

@@ -75,6 +75,7 @@ app.add_middleware(GZipMiddleware, minimum_size=500)
 
 # ─── Security Headers Middleware ──────────────────────────────
 
+
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     """Add CSP and security headers to all responses."""

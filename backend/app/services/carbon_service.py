@@ -13,8 +13,14 @@ from app.models.schemas import (
 
 # ─── Emission Factors ─────────────────────────────────────
 
+# Average CO2e emission factors (kg CO2e per unit)
+# Note: These are rough global averages for educational purposes and should be refined
+# with local data in production.
 TRANSPORT_FACTORS: dict[str, dict[str, float]] = {
-    "car":                  {"petrol": 0.192, "diesel": 0.171, "electric": 0.053, "hybrid": 0.106, "cng": 0.153, "default": 0.192},
+    "car": {
+        "petrol": 0.192, "diesel": 0.171, "electric": 0.053,
+        "hybrid": 0.106, "cng": 0.153, "default": 0.192,
+    },
     "motorcycle":           {"petrol": 0.114, "default": 0.114},
     "bus":                  {"default": 0.089},
     "train":                {"default": 0.041},
@@ -89,12 +95,12 @@ def calculate_emissions(entry: CarbonEntryInput) -> CarbonBreakdown:
 
     # Shopping
     if entry.shopping:
-        for item in entry.shopping.items:
-            if item.category == ShoppingCategory.OTHER and item.estimated_value_inr:
-                shopping_kg += (item.estimated_value_inr / 1000) * 0.5 * item.quantity
+        for shop_item in entry.shopping.items:
+            if shop_item.category == ShoppingCategory.OTHER and shop_item.estimated_value_inr:
+                shopping_kg += (shop_item.estimated_value_inr / 1000) * 0.5 * shop_item.quantity
             else:
-                factor = SHOPPING_FACTORS.get(item.category.value, 5.0)
-                shopping_kg += factor * item.quantity
+                factor = SHOPPING_FACTORS.get(shop_item.category.value, 5.0)
+                shopping_kg += factor * shop_item.quantity
         shopping_kg = round(shopping_kg, 3)
 
     return CarbonBreakdown(

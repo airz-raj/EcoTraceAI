@@ -151,4 +151,3 @@ class HealthResponse(BaseModel):
     """Standard health check response schema."""
     status: str
     service: str
-

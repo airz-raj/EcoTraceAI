@@ -32,7 +32,7 @@ _gemini_client = None
 
 if GEMINI_API_KEY:
     try:
-        from google import genai
+        from google import genai  # type: ignore
 
         _gemini_client = genai.Client(api_key=GEMINI_API_KEY)
         logger.info("Gemini AI client initialized successfully")
@@ -206,7 +206,7 @@ async def chat_endpoint(req: ChatRequest) -> ChatResponse:
     # ── Try Gemini LLM if available ───────────────────────
     if _gemini_client:
         try:
-            from google.genai import types as genai_types
+            from google.genai import types as genai_types  # type: ignore
 
             contents = []
             for msg in req.messages[:-1]:

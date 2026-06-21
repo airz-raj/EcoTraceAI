@@ -8,7 +8,7 @@
  * "Small things make big changes" — daily consistency > grand gestures.
  */
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 
 // ─── Daily Eco-Actions ──────────────────────────────────────
 
@@ -106,7 +106,7 @@ function getIntensityLabel(actionCount: number): string {
 
 // ─── Component ──────────────────────────────────────────────
 
-export function EcoStreakCalendar() {
+export const EcoStreakCalendar = React.memo(function EcoStreakCalendar() {
   const [streakData, setStreakData] = useState<Record<string, DayLog>>(loadStreakData);
   const [selectedDate, setSelectedDate] = useState<string>(getDateKey(new Date()));
   const [showChecklist, setShowChecklist] = useState(true);
@@ -387,4 +387,4 @@ export function EcoStreakCalendar() {
       )}
     </section>
   );
-}
+});

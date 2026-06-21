@@ -2,20 +2,23 @@
 EcoTrace AI — Carbon Routes
 
 POST /api/carbon — Calculate and store carbon emissions.
-GET /api/carbon — Retrieve carbon entries.
+GET  /api/carbon — Retrieve carbon entries with pagination.
 """
 
 import json
+import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 import aiosqlite
 
+from app.constants import DEFAULT_ENTRIES_LIMIT, MAX_ENTRIES_LIMIT
 from app.models.schemas import CarbonEntryInput, CarbonEntryResponse, CarbonBreakdown
 from app.services.carbon_service import calculate_emissions
 from app.db.database import get_db
 
+logger = logging.getLogger("ecotrace.carbon")
 router = APIRouter()
 
 
@@ -23,13 +26,18 @@ router = APIRouter()
 async def create_carbon_entry(
     entry: CarbonEntryInput,
     db: aiosqlite.Connection = Depends(get_db),
-):
-    """Calculate emissions and store a new carbon entry."""
+) -> CarbonEntryResponse:
+    """
+    Calculate emissions and store a new carbon entry.
+
+    Computes CO₂ breakdown across transport, food, energy, shopping,
+    and digital categories using IPCC AR6 emission factors.
+    """
     breakdown = calculate_emissions(entry)
     total = sum(vars(breakdown).values())
 
     entry_id = str(uuid.uuid4())
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
 
     await db.execute(
         """INSERT INTO carbon_entries
@@ -49,6 +57,8 @@ async def create_carbon_entry(
     )
     await db.commit()
 
+    logger.info("Created carbon entry %s: %.3f kg CO₂", entry_id, total)
+
     return CarbonEntryResponse(
         id=entry_id,
         date=now,
@@ -59,13 +69,28 @@ async def create_carbon_entry(
 
 @router.get("/carbon")
 async def get_carbon_entries(
-    limit: int = 50,
+    limit: int = Query(
+        default=DEFAULT_ENTRIES_LIMIT,
+        ge=1,
+        le=MAX_ENTRIES_LIMIT,
+        description="Maximum number of entries to return",
+    ),
+    offset: int = Query(
+        default=0,
+        ge=0,
+        description="Number of entries to skip for pagination",
+    ),
     db: aiosqlite.Connection = Depends(get_db),
-):
-    """Retrieve recent carbon entries."""
+) -> list[dict]:
+    """
+    Retrieve recent carbon entries with pagination.
+
+    Returns entries ordered by date (newest first).
+    Supports limit/offset pagination for efficient data loading.
+    """
     cursor = await db.execute(
-        "SELECT * FROM carbon_entries ORDER BY date DESC LIMIT ?",
-        (min(limit, 200),),
+        "SELECT * FROM carbon_entries ORDER BY date DESC LIMIT ? OFFSET ?",
+        (limit, offset),
     )
     rows = await cursor.fetchall()
 

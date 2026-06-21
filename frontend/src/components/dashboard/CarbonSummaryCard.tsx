@@ -5,11 +5,11 @@
  * and equivalence comparisons.
  */
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useCarbonContext } from '../../context/CarbonContext';
 import { getCO2Equivalences } from '../../utils/carbonFormulas';
 
-export function CarbonSummaryCard() {
+export const CarbonSummaryCard = React.memo(function CarbonSummaryCard() {
   const { state } = useCarbonContext();
 
   const stats = useMemo(() => {
@@ -98,4 +98,4 @@ export function CarbonSummaryCard() {
       )}
     </section>
   );
-}
+});

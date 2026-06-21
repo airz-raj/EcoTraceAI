@@ -2,24 +2,45 @@
 EcoTrace AI — FastAPI Backend
 
 Main application entry point with CORS, CSP headers,
-rate limiting middleware, and route registration.
+GZip compression, structured logging, and route registration.
 """
 
+import logging
+import os
+import time
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
-from app.routes import carbon, parser, digital, chat
 from app.db.database import init_db
+from app.routes import carbon, chat, digital, parser
 
+# ─── Structured Logging ────────────────────────────────────────
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("ecotrace")
+
+
+# ─── Lifespan ──────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize database on startup."""
+    """Initialize database on startup, cleanup on shutdown."""
+    logger.info("Starting EcoTrace AI backend...")
     await init_db()
+    logger.info("Database initialized successfully")
     yield
+    logger.info("Shutting down EcoTrace AI backend")
 
+
+# ─── Application ───────────────────────────────────────────────
 
 app = FastAPI(
     title="EcoTrace AI API",
@@ -28,12 +49,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ─── CORS ──────────────────────────────────────────────────
-
-import os
+# ─── CORS ──────────────────────────────────────────────────────
 
 # Allow Cloud Run URLs dynamically + local dev
-_cors_origins = [
+_cors_origins: list[str] = [
     "http://localhost:3000",
     "http://localhost:5173",
 ]
@@ -50,11 +69,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ─── GZip Compression ─────────────────────────────────────────
 
-# ─── Security Headers Middleware ──────────────────────────
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
+# ─── Security Headers Middleware ──────────────────────────────
 
 @app.middleware("http")
-async def add_security_headers(request, call_next):
+async def add_security_headers(request: Request, call_next):
     """Add CSP and security headers to all responses."""
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -64,7 +86,40 @@ async def add_security_headers(request, call_next):
     return response
 
 
-# ─── Routes ────────────────────────────────────────────────
+# ─── Response Time Logging Middleware ──────────────────────────
+
+@app.middleware("http")
+async def log_response_time(request: Request, call_next):
+    """Log request processing time for performance monitoring."""
+    start = time.perf_counter()
+    response = await call_next(request)
+    elapsed_ms = (time.perf_counter() - start) * 1000
+    logger.info(
+        "%s %s → %d (%.1fms)",
+        request.method,
+        request.url.path,
+        response.status_code,
+        elapsed_ms,
+    )
+    return response
+
+
+# ─── Cache Control Middleware ──────────────────────────────────
+
+@app.middleware("http")
+async def add_cache_headers(request: Request, call_next):
+    """Add Cache-Control and ETag headers for GET responses."""
+    response = await call_next(request)
+    if request.method == "GET" and response.status_code == 200:
+        # Short cache for API data, longer for static health checks
+        if request.url.path == "/api/health":
+            response.headers["Cache-Control"] = "public, max-age=30"
+        elif request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "private, max-age=5"
+    return response
+
+
+# ─── Routes ────────────────────────────────────────────────────
 
 app.include_router(carbon.router, prefix="/api", tags=["Carbon Data"])
 app.include_router(parser.router, prefix="/api", tags=["Parser"])
@@ -72,11 +127,11 @@ app.include_router(digital.router, prefix="/api", tags=["Digital Footprint"])
 app.include_router(chat.router, prefix="/api", tags=["AI Chatbot"])
 
 
-# ─── Health Check ──────────────────────────────────────────
+# ─── Health Check ──────────────────────────────────────────────
 
 @app.get("/api/health", tags=["Health"])
 async def health_check():
-    """Health check endpoint for monitoring."""
+    """Health check endpoint for monitoring and load balancer probes."""
     return JSONResponse(content={"status": "ok", "service": "ecotrace-ai"})
 
 

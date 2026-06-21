@@ -5,7 +5,7 @@
  * Zero external dependencies — pure React patterns.
  */
 
-import React, { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import type { AppState, AppAction, CarbonEntry, AIInsightResponse } from '../types';
 
 // ─── Initial State ───────────────────────────────────────────
@@ -122,20 +122,23 @@ interface CarbonProviderProps {
 export function CarbonProvider({ children }: CarbonProviderProps) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Persist relevant state to localStorage on changes
+  // Persist relevant state to localStorage on changes with debounce
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          entries: state.entries,
-          userCountry: state.userCountry,
-          darkMode: state.darkMode,
-        })
-      );
-    } catch {
-      // Silently fail
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            entries: state.entries,
+            userCountry: state.userCountry,
+            darkMode: state.darkMode,
+          })
+        );
+      } catch {
+        // Silently fail
+      }
+    }, 500);
+    return () => clearTimeout(timeoutId);
   }, [state.entries, state.userCountry, state.darkMode]);
 
   // Apply dark mode class to document
@@ -143,38 +146,38 @@ export function CarbonProvider({ children }: CarbonProviderProps) {
     document.documentElement.classList.toggle('dark', state.darkMode);
   }, [state.darkMode]);
 
-  const addEntry = (entry: CarbonEntry) => {
+  const addEntry = useCallback((entry: CarbonEntry) => {
     dispatch({ type: 'ADD_ENTRY', payload: entry });
-  };
+  }, []);
 
-  const deleteEntry = (id: string) => {
+  const deleteEntry = useCallback((id: string) => {
     dispatch({ type: 'DELETE_ENTRY', payload: id });
-  };
+  }, []);
 
-  const setInsights = (insights: AIInsightResponse | null) => {
+  const setInsights = useCallback((insights: AIInsightResponse | null) => {
     dispatch({ type: 'SET_INSIGHTS', payload: insights });
-  };
+  }, []);
 
-  const toggleDarkMode = () => {
+  const toggleDarkMode = useCallback(() => {
     dispatch({ type: 'TOGGLE_DARK_MODE' });
-  };
+  }, []);
 
-  const setCountry = (country: string) => {
+  const setCountry = useCallback((country: string) => {
     dispatch({ type: 'SET_COUNTRY', payload: country });
-  };
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    state,
+    dispatch,
+    addEntry,
+    deleteEntry,
+    setInsights,
+    toggleDarkMode,
+    setCountry,
+  }), [state, addEntry, deleteEntry, setInsights, toggleDarkMode, setCountry]);
 
   return (
-    <CarbonContext.Provider
-      value={{
-        state,
-        dispatch,
-        addEntry,
-        deleteEntry,
-        setInsights,
-        toggleDarkMode,
-        setCountry,
-      }}
-    >
+    <CarbonContext.Provider value={contextValue}>
       {children}
     </CarbonContext.Provider>
   );

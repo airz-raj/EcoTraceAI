@@ -5,7 +5,7 @@
  * Paired with a sr-only data table for screen reader accessibility.
  */
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Area, AreaChart,
@@ -13,7 +13,7 @@ import {
 import { useCarbonContext } from '../../context/CarbonContext';
 import { DataTable } from '../common/DataTable';
 
-export function TrendChart() {
+export const TrendChart = React.memo(function TrendChart() {
   const { state } = useCarbonContext();
 
   const chartData = useMemo(() => {
@@ -125,4 +125,4 @@ export function TrendChart() {
       />
     </section>
   );
-}
+});

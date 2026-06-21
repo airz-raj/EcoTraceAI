@@ -1,29 +1,34 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { sendChatMessage } from '../../services/api';
 import { useCarbonContext } from '../../context/CarbonContext';
 
-export function EcoChatbot() {
+export interface ChatMessage {
+  role: 'user' | 'model';
+  content: string;
+}
+
+export const EcoChatbot = React.memo(function EcoChatbot() {
   const { state } = useCarbonContext();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{ role: 'user' | 'model'; content: string }[]>([
+  const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'model', content: "Hi! I'm your EcoTrace AI assistant. Ask me how to reduce your carbon footprint or understand your dashboard!" }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [messages, isTyping, scrollToBottom]);
 
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (!input.trim()) return;
     
-    const userMsg = { role: 'user' as const, content: input.trim() };
+    const userMsg: ChatMessage = { role: 'user', content: input.trim() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput('');
@@ -43,7 +48,7 @@ export function EcoChatbot() {
     } finally {
       setIsTyping(false);
     }
-  };
+  }, [input, messages, state.entries]);
 
   return (
     <>
@@ -123,4 +128,4 @@ export function EcoChatbot() {
       )}
     </>
   );
-}
+});

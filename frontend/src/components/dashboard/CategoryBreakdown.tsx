@@ -4,7 +4,7 @@
  * Pie/bar chart showing emission breakdown by category.
  */
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useCarbonContext } from '../../context/CarbonContext';
 
@@ -17,7 +17,7 @@ const LABELS: Record<string, string> = {
   digitalKg: 'Digital',
 };
 
-export function CategoryBreakdown() {
+export const CategoryBreakdown = React.memo(function CategoryBreakdown() {
   const { state } = useCarbonContext();
 
   const breakdown = useMemo(() => {
@@ -149,4 +149,4 @@ export function CategoryBreakdown() {
       </table>
     </section>
   );
-}
+});

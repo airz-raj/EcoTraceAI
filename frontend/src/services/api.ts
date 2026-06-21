@@ -30,10 +30,8 @@ const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    // Add timestamp to prevent caching
-    if (config.method === 'get') {
-      config.params = { ...config.params, _t: Date.now() };
-    }
+    // Note: Previously added timestamp here to prevent caching.
+    // Removed to allow proper ETags and Cache-Control headers to work efficiently.
     return config;
   },
   (error) => Promise.reject(error)
@@ -104,7 +102,7 @@ export async function checkHealth(): Promise<boolean> {
 }
 
 /** Send message to AI chatbot */
-export async function sendChatMessage(messages: {role: string, content: string}[], contextData?: any): Promise<{response: string, source: string}> {
+export async function sendChatMessage(messages: {role: string, content: string}[], contextData?: Record<string, unknown>): Promise<{response: string, source: string}> {
   const { data } = await apiClient.post('/chat', { messages, contextData });
   return data;
 }

@@ -8,11 +8,9 @@
 
 import type { CarbonEntry, CarbonBreakdown, Recommendation } from '../types';
 
-let recommendationIdCounter = 0;
-
 function nextId(): string {
-  recommendationIdCounter += 1;
-  return `rec_${recommendationIdCounter}_${Date.now()}`;
+  // Use crypto.randomUUID() for secure, collision-free IDs instead of mutable global state
+  return `rec_${crypto.randomUUID()}`;
 }
 
 /**

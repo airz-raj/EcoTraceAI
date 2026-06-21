@@ -26,7 +26,7 @@ SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 # ─── Connection Pool ──────────────────────────────────────────
 
 _pool: asyncio.Queue[aiosqlite.Connection] = asyncio.Queue(maxsize=DB_POOL_SIZE)
-_pool_initialized = False
+_pool_initialized = False  # pylint: disable=invalid-name
 
 
 async def _create_connection() -> aiosqlite.Connection:
@@ -44,7 +44,7 @@ async def _create_connection() -> aiosqlite.Connection:
 
 async def init_db() -> None:
     """Initialize database schema and pre-warm connection pool."""
-    global _pool_initialized
+    global _pool_initialized  # pylint: disable=global-statement
 
     # Apply schema
     async with aiosqlite.connect(DB_PATH) as db:

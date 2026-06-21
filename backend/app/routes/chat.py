@@ -32,8 +32,7 @@ _gemini_client = None
 
 if GEMINI_API_KEY:
     try:
-        import google.genai as genai
-        from google.genai import types
+        from google import genai
 
         _gemini_client = genai.Client(api_key=GEMINI_API_KEY)
         logger.info("Gemini AI client initialized successfully")
@@ -111,13 +110,21 @@ def _match_rule_category(message_lower: str) -> str:
     Uses keyword matching with priority ordering.
     Results are cached with LRU for repeated queries.
     """
-    if any(w in message_lower for w in ("improve", "reduce", "performance", "better", "lower", "tips", "save")):
+    if any(w in message_lower for w in (
+            "improve", "reduce", "performance", "better", "lower", "tips", "save"
+    )):
         return "reduce"
-    if any(w in message_lower for w in ("dashboard", "explain", "how", "what is this", "chart", "summary")):
+    if any(w in message_lower for w in (
+            "dashboard", "explain", "how", "what is this", "chart", "summary"
+    )):
         return "dashboard"
-    if any(w in message_lower for w in ("impact", "hub", "paris", "agreement", "challenge", "budget")):
+    if any(w in message_lower for w in (
+            "impact", "hub", "paris", "agreement", "challenge", "budget"
+    )):
         return "impact"
-    if any(w in message_lower for w in ("hello", "hi", "hey", "good morning", "good evening")):
+    if any(w in message_lower for w in (
+            "hello", "hi", "hey", "good morning", "good evening"
+    )):
         return "greeting"
     return "fallback"
 
@@ -125,29 +132,50 @@ def _match_rule_category(message_lower: str) -> str:
 # ─── Rule-Based Responses ─────────────────────────────────────
 
 RULE_RESPONSES: dict[str, str] = {
-    "reduce": """### 🚀 How to Reduce Your Carbon Footprint
-Here are the most effective ways to improve your performance based on our Impact Hub:
-1. **Transport:** Switch to public transit or carpooling. Just replacing a 15km daily solo drive with a bus ride saves ~1,200kg CO₂ a year.
-2. **Food:** Adopt a plant-rich diet. Replacing beef with chicken or legumes for just two meals a week cuts food emissions by 30%.
-3. **Energy:** Optimize your AC (set to 24-26°C) and switch to LED bulbs. If possible, opt-in to a green energy tariff with your provider.
-4. **Digital:** Turn on power-saving modes on your devices and unsubscribe from unnecessary newsletters.
+    "reduce": (
+        "### 🚀 How to Reduce Your Carbon Footprint\n"
+        "Here are the most effective ways to improve your performance based on our Impact Hub:\n"
+        "1. **Transport:** Switch to public transit or carpooling. Just replacing a 15km "
+        "daily solo drive with a bus ride saves ~1,200kg CO₂ a year.\n"
+        "2. **Food:** Adopt a plant-rich diet. Replacing beef with chicken or legumes "
+        "for just two meals a week cuts food emissions by 30%.\n"
+        "3. **Energy:** Optimize your AC (set to 24-26°C) and switch to LED bulbs. "
+        "If possible, opt-in to a green energy tariff with your provider.\n"
+        "4. **Digital:** Turn on power-saving modes on your devices and unsubscribe "
+        "from unnecessary newsletters.\n\n"
+        "Check out the **What-If Scenario Planner** in the Impact Hub to see how "
+        "these changes impact your specific footprint!"
+    ),
 
-Check out the **What-If Scenario Planner** in the Impact Hub to see how these changes impact your specific footprint!""",
+    "dashboard": (
+        "### 📊 Understanding Your Dashboard\n"
+        "Your dashboard is your central command center:\n"
+        "- **Carbon Summary Card:** Shows your total emissions, your current tier, "
+        "and how you compare to the national average.\n"
+        "- **Eco Streak Calendar:** Tracks your daily sustainable actions. "
+        "Small things make big changes—try to keep your streak alive!\n"
+        "- **Trend & Category Charts:** Visualizes exactly where your emissions come from "
+        "so you know what to target.\n"
+        "- **AI Recommendations:** Highlights low-hanging fruit for reducing emissions "
+        "based on your specific data."
+    ),
 
-    "dashboard": """### 📊 Understanding Your Dashboard
-Your dashboard is your central command center:
-- **Carbon Summary Card:** Shows your total emissions, your current tier (e.g., Eco Warrior), and how you compare to the national average.
-- **Eco Streak Calendar:** The GitHub-style heatmap tracks your daily sustainable actions. Small things make big changes—try to keep your streak alive!
-- **Trend & Category Charts:** Visualizes exactly where your emissions come from (Transport, Food, Energy, etc.) so you know what to target.
-- **AI Recommendations:** Highlights low-hanging fruit for reducing emissions based on your specific data.""",
+    "impact": (
+        "### 🌍 The Impact Hub\n"
+        "The Impact Hub connects your personal actions to global climate goals:\n"
+        "- **Carbon Budget Gauge:** Compares your footprint against the Paris "
+        "Agreement target of **2.3t CO₂ per year**.\n"
+        "- **Collective Impact Amplifier:** Shows the massive scale of change if "
+        "many people adopted your lifestyle swaps.\n"
+        "- **90-Day Challenge:** A structured weekly roadmap to systematically lower "
+        "your emissions over 3 months."
+    ),
 
-    "impact": """### 🌍 The Impact Hub
-The Impact Hub connects your personal actions to global climate goals:
-- **Carbon Budget Gauge:** Compares your footprint against the Paris Agreement target of **2.3t CO₂ per year** (the per-capita limit needed to keep warming below 1.5°C).
-- **Collective Impact Amplifier:** Shows the massive scale of change if 10,000 or 1,000,000 people adopted your lifestyle swaps.
-- **90-Day Challenge:** A structured weekly roadmap to systematically lower your emissions over 3 months.""",
-
-    "greeting": "Hello! 👋 I'm your EcoTrace Assistant. You can ask me how to **reduce your carbon footprint**, ask for an **explanation of the Dashboard**, or learn more about the **Impact Hub**. How can I help you today?",
+    "greeting": (
+        "Hello! 👋 I'm your EcoTrace Assistant. You can ask me how to **reduce your "
+        "carbon footprint**, ask for an **explanation of the Dashboard**, or learn more "
+        "about the **Impact Hub**. How can I help you today?"
+    ),
 
     "fallback": (
         "I'm your EcoTrace assistant! Since I'm currently running in 100% open-source mode, "
@@ -178,13 +206,16 @@ async def chat_endpoint(req: ChatRequest) -> ChatResponse:
     # ── Try Gemini LLM if available ───────────────────────
     if _gemini_client:
         try:
-            from google.genai import types
+            from google.genai import types as genai_types
 
             contents = []
             for msg in req.messages[:-1]:
                 role = "user" if msg.role == "user" else "model"
                 contents.append(
-                    types.Content(role=role, parts=[types.Part.from_text(text=msg.content)])
+                    genai_types.Content(
+                        role=role,
+                        parts=[genai_types.Part.from_text(text=msg.content)]
+                    )
                 )
 
             latest_msg = req.messages[-1].content
@@ -192,14 +223,14 @@ async def chat_endpoint(req: ChatRequest) -> ChatResponse:
             response = _gemini_client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=contents + [latest_msg],
-                config=types.GenerateContentConfig(
+                config=genai_types.GenerateContentConfig(
                     system_instruction=sys_prompt,
                     temperature=0.7,
                 ),
             )
             logger.info("Chat response generated via Gemini LLM")
             return ChatResponse(response=response.text, source="gemini")
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             logger.exception("Gemini API error; falling back to rule-based engine")
 
     # ── Smart Rule-Based Engine (100% Free) ───────────────

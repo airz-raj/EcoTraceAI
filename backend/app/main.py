@@ -31,7 +31,7 @@ logger = logging.getLogger("ecotrace")
 # ─── Lifespan ──────────────────────────────────────────────────
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_: FastAPI):
     """Initialize database on startup, cleanup on shutdown."""
     logger.info("Starting EcoTrace AI backend...")
     await init_db()

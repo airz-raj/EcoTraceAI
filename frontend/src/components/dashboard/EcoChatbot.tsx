@@ -43,7 +43,7 @@ export const EcoChatbot = React.memo(function EcoChatbot() {
 
       const result = await sendChatMessage(newMessages, contextData);
       setMessages([...newMessages, { role: 'model', content: result.response }]);
-    } catch (err) {
+    } catch {
       setMessages([...newMessages, { role: 'model', content: "I'm having trouble connecting to my brain right now. Please try again later!" }]);
     } finally {
       setIsTyping(false);

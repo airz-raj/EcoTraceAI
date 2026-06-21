@@ -6,11 +6,8 @@ Mirrors the frontend logic for validation and consistency.
 """
 
 from app.models.schemas import (
-    CarbonEntryInput,
     CarbonBreakdown,
-    TransportMode,
-    FuelType,
-    FoodCategory,
+    CarbonEntryInput,
     ShoppingCategory,
 )
 

@@ -5,14 +5,16 @@ Strict input validation with boundaries (ge=0) and length limits.
 All API endpoints enforce these schemas.
 """
 
-from pydantic import BaseModel, Field, field_validator
-from typing import Optional, Literal
 from enum import Enum
+from typing import Literal, Optional
+
+from pydantic import BaseModel, Field, field_validator
 
 
 # ─── Enums ─────────────────────────────────────────────────
 
 class TransportMode(str, Enum):
+    """Supported transportation modes."""
     CAR = "car"
     BUS = "bus"
     TRAIN = "train"
@@ -25,6 +27,7 @@ class TransportMode(str, Enum):
 
 
 class FuelType(str, Enum):
+    """Types of fuel for transport vehicles."""
     PETROL = "petrol"
     DIESEL = "diesel"
     ELECTRIC = "electric"
@@ -33,6 +36,7 @@ class FuelType(str, Enum):
 
 
 class FoodCategory(str, Enum):
+    """Categorization of food items for carbon footprint."""
     BEEF = "beef"
     LAMB = "lamb"
     PORK = "pork"
@@ -48,6 +52,7 @@ class FoodCategory(str, Enum):
 
 
 class ShoppingCategory(str, Enum):
+    """Categories of shopping items."""
     CLOTHING = "clothing"
     ELECTRONICS = "electronics"
     FURNITURE = "furniture"
@@ -88,6 +93,7 @@ class EnergyInput(BaseModel):
     @field_validator("country")
     @classmethod
     def validate_country(cls, v: str) -> str:
+        """Validate and normalize country code to uppercase."""
         return v.upper()
 
 
@@ -114,6 +120,7 @@ class CarbonEntryInput(BaseModel):
 # ─── Response Schemas ──────────────────────────────────────
 
 class CarbonBreakdown(BaseModel):
+    """Component-level breakdown of carbon emissions."""
     transport_kg: float
     food_kg: float
     energy_kg: float
@@ -122,6 +129,7 @@ class CarbonBreakdown(BaseModel):
 
 
 class CarbonEntryResponse(BaseModel):
+    """Response returned after processing a carbon entry."""
     id: str
     date: str
     total_kg_co2: float
@@ -140,5 +148,7 @@ class DigitalFootprintInput(BaseModel):
 
 
 class HealthResponse(BaseModel):
+    """Standard health check response schema."""
     status: str
     service: str
+

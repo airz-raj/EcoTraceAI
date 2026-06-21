@@ -44,15 +44,18 @@ export function DeviceSimulator() {
   const { state } = useCarbonContext();
 
   // ─── Configuration State ────────────────────────────────
-  const [config, setConfig] = useState<SimulationConfig>({
-    profileIndex: 0,
-    cpuModel: DEVICE_PROFILES[0].cpuModel,
-    tdpWatts: DEVICE_PROFILES[0].tdpWatts,
-    cores: DEVICE_PROFILES[0].cores,
-    ramGb: DEVICE_PROFILES[0].ramGb,
-    cpuLoadPercent: DEVICE_PROFILES[0].baseLoadPercent,
-    hoursPerDay: 8,
-    country: state.userCountry,
+  const [config, setConfig] = useState<SimulationConfig>(() => {
+    const detected = detectDeviceSpecs();
+    return {
+      profileIndex: 0,
+      cpuModel: DEVICE_PROFILES[0].cpuModel,
+      tdpWatts: DEVICE_PROFILES[0].tdpWatts,
+      cores: detected.cores || DEVICE_PROFILES[0].cores,
+      ramGb: DEVICE_PROFILES[0].ramGb,
+      cpuLoadPercent: DEVICE_PROFILES[0].baseLoadPercent,
+      hoursPerDay: 8,
+      country: state.userCountry,
+    };
   });
 
   const [result, setResult] = useState<SimulationResult | null>(null);
@@ -79,13 +82,7 @@ export function DeviceSimulator() {
     setCpuSeries([]);
   }, []);
 
-  // ─── Auto-detect on mount ───────────────────────────────
-  useEffect(() => {
-    const detected = detectDeviceSpecs();
-    if (detected.cores) {
-      setConfig((prev) => ({ ...prev, cores: detected.cores! }));
-    }
-  }, []);
+
 
   // ─── Run Simulation ─────────────────────────────────────
   const runSim = useCallback(() => {

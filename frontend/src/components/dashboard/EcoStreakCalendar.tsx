@@ -61,9 +61,7 @@ function getDateKey(date: Date): string {
   return date.toISOString().split('T')[0];
 }
 
-function getDayName(date: Date): string {
-  return date.toLocaleDateString('en', { weekday: 'short' });
-}
+
 
 function getMonthLabel(date: Date): string {
   return date.toLocaleDateString('en', { month: 'short' });
@@ -195,7 +193,7 @@ export const EcoStreakCalendar = React.memo(function EcoStreakCalendar() {
     return w;
   }, [calendarDays]);
 
-  const isToday = selectedDate === todayKey;
+
 
   return (
     <section className="glass-card p-6 space-y-5" aria-labelledby="streak-heading">

@@ -31,7 +31,7 @@ self.onmessage = async (e: MessageEvent) => {
 
     for (const rec of recommendations) {
       try {
-        const result = await classifier(`${rec.title}. ${rec.description}`, labels) as any;
+        const result = await classifier(`${rec.title}. ${rec.description}`, labels) as { scores: number[], labels: string[] };
         // Map classification to priority score
         const highScore = result.scores[result.labels.indexOf('high environmental impact')] ?? 0;
         scores.push(Math.round(50 + highScore * 50));

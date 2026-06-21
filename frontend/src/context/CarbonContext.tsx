@@ -190,6 +190,7 @@ export function CarbonProvider({ children }: CarbonProviderProps) {
  *
  * @throws Error if used outside of CarbonProvider
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCarbonContext(): CarbonContextType {
   const context = useContext(CarbonContext);
   if (!context) {

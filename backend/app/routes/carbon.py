@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, Query
 import aiosqlite
 
 from app.constants import DEFAULT_ENTRIES_LIMIT, MAX_ENTRIES_LIMIT
-from app.models.schemas import CarbonEntryInput, CarbonEntryResponse, CarbonBreakdown
+from app.models.schemas import CarbonEntryInput, CarbonEntryResponse
 from app.services.carbon_service import calculate_emissions
 from app.db.database import get_db
 
@@ -41,7 +41,8 @@ async def create_carbon_entry(
 
     await db.execute(
         """INSERT INTO carbon_entries
-           (id, date, total_kg_co2, transport_kg, food_kg, energy_kg, shopping_kg, digital_kg, raw_data)
+           (id, date, total_kg_co2, transport_kg, food_kg, energy_kg,
+            shopping_kg, digital_kg, raw_data)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             entry_id,
